@@ -1,10 +1,12 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useConfigStore } from '@/store/configStore';
+import { useTranslation } from '@/lib/i18n';
 
 export default function Config() {
   const navigate = useNavigate();
   const { config, setConfig, load } = useConfigStore();
+  const { t } = useTranslation();
   const [form, setForm] = useState(config);
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export default function Config() {
 
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-xl font-bold">Config</h1>
+      <h1 className="text-xl font-bold">{t('config.title')}</h1>
       <form onSubmit={handleSubmit} className="space-y-3">
         <input
           name="email"
@@ -59,7 +61,7 @@ export default function Config() {
           className="border p-2 w-full"
         />
         <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
-          Save
+          {t('config.save')}
         </button>
       </form>
     </div>
