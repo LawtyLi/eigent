@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { chatService } from '@/services/chat';
 import { useConfigStore } from '@/store/configStore';
+import { TaskProgress } from '@/components/TaskProgress';
+import { useChatStore } from '@/store/chatStore';
 
 export default function Chat() {
   const { config, taskId, setTaskId } = useConfigStore();
+  const chatStore = useChatStore();
   const [question, setQuestion] = useState('');
   const [supplement, setSupplement] = useState('');
   const [paused, setPaused] = useState(false);
@@ -19,7 +22,9 @@ export default function Chat() {
         { ...config, question },
         async (step, data) => {
           if (step === 'task_id') {
-            setTaskId(String(data));
+            const id = String(data);
+            setTaskId(id);
+            chatStore.create(id);
             return;
           }
           if (step === 'ask') {
@@ -65,6 +70,7 @@ export default function Chat() {
   return (
     <div className="p-4 space-y-4">
       <h1 className="text-xl font-bold">Chat</h1>
+      {chatStore.activeTaskId && <TaskProgress />}
       <form onSubmit={handleSubmit} className="space-y-3">
         <textarea
           value={question}

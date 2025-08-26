@@ -3,6 +3,7 @@ import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { create } from 'zustand';
 import { generateUniqueId, uploadLog } from "@/lib";
 import { FileText } from 'lucide-react';
+import { persist } from 'zustand/middleware';
 import { getAuthStore, useWorkerList } from './authStore';
 import { showCreditsToast } from '@/components/Toast/creditsToast';
 import { showStorageToast } from '@/components/Toast/storageToast';
@@ -99,10 +100,11 @@ interface ChatStore {
 
 
 const chatStore = create<ChatStore>()(
-	(set, get) => ({
-		activeTaskId: null,
-		tasks: {},
-		updateCount: 0,
+        persist(
+        (set, get) => ({
+                activeTaskId: null,
+                tasks: {},
+                updateCount: 0,
 		create(id?: string, type?: any) {
 			const taskId = id ? id : generateUniqueId();
 			console.log("Create Task", taskId)
@@ -1605,19 +1607,23 @@ const chatStore = create<ChatStore>()(
 				}
 			})
 		},
-		setIsTaskEdit(taskId: string, isTaskEdit: boolean) {
-			set((state) => ({
-				...state,
-				tasks: {
-					...state.tasks,
-					[taskId]: {
-						...state.tasks[taskId],
-						isTaskEdit
-					},
-				},
-			}))
-		},
-	})
+                setIsTaskEdit(taskId: string, isTaskEdit: boolean) {
+                        set((state) => ({
+                                ...state,
+                                tasks: {
+                                        ...state.tasks,
+                                        [taskId]: {
+                                                ...state.tasks[taskId],
+                                                isTaskEdit
+                                        },
+                                },
+                        }))
+                },
+        }),
+        {
+                name: 'chat-store',
+                partialize: (state) => ({ activeTaskId: state.activeTaskId, tasks: state.tasks })
+        })
 );
 
 const filterMessage = (message: AgentMessage) => {
