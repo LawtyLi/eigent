@@ -28,14 +28,22 @@ export function WorkSpaceMenu() {
 			log: [],
 			activeWebviewIds: [],
 		},
-		{
-			tasks: [],
-			agent_id: "search_agent",
-			name: "Search Agent",
-			type: "search_agent",
-			log: [],
-			activeWebviewIds: [],
-		},
+                {
+                        tasks: [],
+                        agent_id: "search_agent",
+                        name: "Search Agent",
+                        type: "search_agent",
+                        log: [],
+                        activeWebviewIds: [],
+                },
+                {
+                        tasks: [],
+                        agent_id: "new_search_agent",
+                        name: "New Search Agent",
+                        type: "new_search_agent",
+                        log: [],
+                        activeWebviewIds: [],
+                },
 		{
 			tasks: [],
 			agent_id: "multi_modal_agent",
@@ -95,9 +103,9 @@ export function WorkSpaceMenu() {
 						item.tasks.find((task) => task.id === hasUrl?.processTaskId)
 					);
 					
-					if (activeAgentIndex === -1) {
-						const searchAgentIndex = taskAssigning.findIndex((item) => item.type === 'search_agent');
-						if (searchAgentIndex !== -1) {
+                                                if (activeAgentIndex === -1) {
+                                                        const searchAgentIndex = taskAssigning.findIndex((item) => item.type === 'search_agent' || item.type === 'new_search_agent');
+                                                        if (searchAgentIndex !== -1) {
 							taskAssigning[searchAgentIndex].activeWebviewIds?.push({
 								id,
 								url,
@@ -130,7 +138,7 @@ export function WorkSpaceMenu() {
 					]);
 				} else {
 					// If no URL match found, also try to add to search_agent
-					const searchAgentIndex = taskAssigning.findIndex((item) => item.type === 'search_agent');
+                                    const searchAgentIndex = taskAssigning.findIndex((item) => item.type === 'search_agent' || item.type === 'new_search_agent');
 					if (searchAgentIndex !== -1 && webViewUrls.length > 0) {
 						taskAssigning[searchAgentIndex].activeWebviewIds?.push({
 							id,
@@ -148,7 +156,7 @@ export function WorkSpaceMenu() {
 
 			let webviews: { id: string; agent_id: string; index: number }[] = [];
 			taskAssigning.map((item) => {
-				if (item.type === "search_agent") {
+                            if (item.type === "search_agent" || item.type === "new_search_agent") {
 					item.activeWebviewIds?.map((webview, index) => {
 						console.log("@@@@@@", webview);
 						if (webview.id === id) {
@@ -213,15 +221,24 @@ export function WorkSpaceMenu() {
 			borderColor: "border-bg-fill-coding-active",
 			bgColorLight: "bg-emerald-200",
 		},
-		search_agent: {
-			name: "Search Agent",
-			icon: <Globe size={16} className="text-text-primary" />,
-			textColor: "text-blue-700",
-			bgColor: "bg-bg-fill-browser-active",
-			shapeColor: "bg-bg-fill-browser-default",
-			borderColor: "border-bg-fill-browser-active",
-			bgColorLight: "bg-blue-200",
-		},
+                search_agent: {
+                        name: "Search Agent",
+                        icon: <Globe size={16} className="text-text-primary" />,
+                        textColor: "text-blue-700",
+                        bgColor: "bg-bg-fill-browser-active",
+                        shapeColor: "bg-bg-fill-browser-default",
+                        borderColor: "border-bg-fill-browser-active",
+                        bgColorLight: "bg-blue-200",
+                },
+                new_search_agent: {
+                        name: "New Search Agent",
+                        icon: <Globe size={16} className="text-text-primary" />,
+                        textColor: "text-blue-700",
+                        bgColor: "bg-bg-fill-browser-active",
+                        shapeColor: "bg-bg-fill-browser-default",
+                        borderColor: "border-bg-fill-browser-active",
+                        bgColorLight: "bg-blue-200",
+                },
 		document_agent: {
 			name: "Document Agent",
 			icon: <FileText size={16} className="text-text-primary" />,
@@ -256,11 +273,16 @@ export function WorkSpaceMenu() {
 				className={`!h-[10px] !w-[10px] ${agentMap.developer_agent.textColor}`}
 			/>
 		),
-		search_agent: (
-			<Globe
-				className={`!h-[10px] !w-[10px] ${agentMap.search_agent.textColor}`}
-			/>
-		),
+                search_agent: (
+                        <Globe
+                                className={`!h-[10px] !w-[10px] ${agentMap.search_agent.textColor}`}
+                        />
+                ),
+                new_search_agent: (
+                        <Globe
+                                className={`!h-[10px] !w-[10px] ${agentMap.new_search_agent.textColor}`}
+                        />
+                ),
 		document_agent: (
 			<FileText
 				className={`!h-[10px] !w-[10px] ${agentMap.document_agent.textColor}`}
@@ -367,8 +389,9 @@ export function WorkSpaceMenu() {
 												disabled={
 													![
 														"developer_agent",
-														"search_agent",
-														"document_agent",
+                                                                                                                "search_agent",
+                                                                                                                "new_search_agent",
+                                                                                                                "document_agent",
 													].includes(agent.type as AgentNameType) ||
 													agent.tasks.length === 0
 												}

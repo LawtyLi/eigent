@@ -201,6 +201,7 @@ class Agents(str, Enum):
     new_worker_agent = "new_worker_agent"
     developer_agent = "developer_agent"
     search_agent = "search_agent"
+    new_search_agent = "new_search_agent"
     document_agent = "document_agent"
     multi_modal_agent = "multi_modal_agent"
     social_medium_agent = "social_medium_agent"

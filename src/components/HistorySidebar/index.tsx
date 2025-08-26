@@ -92,15 +92,24 @@ export default function HistorySidebar() {
 			borderColor: "border-bg-fill-coding-active",
 			bgColorLight: "bg-emerald-200",
 		},
-		search_agent: {
-			name: "Search Agent",
+                search_agent: {
+                        name: "Search Agent",
 
-			textColor: "text-blue-700",
-			bgColor: "bg-bg-fill-browser-active",
-			shapeColor: "bg-bg-fill-browser-default",
-			borderColor: "border-bg-fill-browser-active",
-			bgColorLight: "bg-blue-200",
-		},
+                        textColor: "text-blue-700",
+                        bgColor: "bg-bg-fill-browser-active",
+                        shapeColor: "bg-bg-fill-browser-default",
+                        borderColor: "border-bg-fill-browser-active",
+                        bgColorLight: "bg-blue-200",
+                },
+                new_search_agent: {
+                        name: "New Search Agent",
+
+                        textColor: "text-blue-700",
+                        bgColor: "bg-bg-fill-browser-active",
+                        shapeColor: "bg-bg-fill-browser-default",
+                        borderColor: "border-bg-fill-browser-active",
+                        bgColorLight: "bg-blue-200",
+                },
 		document_agent: {
 			name: "Document Agent",
 

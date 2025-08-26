@@ -32,6 +32,7 @@ from app.utils.agent import (
     document_agent,
     multi_modal_agent,
     search_agent,
+    new_search_agent,
     social_medium_agent,
     task_summary_agent,
     question_confirm_agent,
@@ -376,6 +377,7 @@ The current date is {datetime.date.today()}. For any date-related tasks, you MUS
     # msg_toolkit = AgentCommunicationToolkit(max_message_history=100)
 
     searcher = search_agent(options)
+    new_searcher = new_search_agent(options)
     developer = await developer_agent(options)
     documenter = await document_agent(options)
     multi_modaler = multi_modal_agent(options)
@@ -415,6 +417,11 @@ The current date is {datetime.date.today()}. For any date-related tasks, you MUS
         "simulate browser actions, and provide relevant information to "
         "solve the given task.",
         searcher,
+    )
+    workforce.add_single_agent_worker(
+        "New Search Agent: Focuses on Alibaba Cloud IQS search to gather "
+        "information for the task.",
+        new_searcher,
     )
     workforce.add_single_agent_worker(
         "Document Agent: A document processing assistant skilled in creating "
