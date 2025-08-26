@@ -3,8 +3,10 @@ import { chatService } from '@/services/chat';
 import { useConfigStore } from '@/store/configStore';
 
 export default function Chat() {
-  const { config, setTaskId } = useConfigStore();
+  const { config, taskId, setTaskId } = useConfigStore();
   const [question, setQuestion] = useState('');
+  const [supplement, setSupplement] = useState('');
+  const [paused, setPaused] = useState(false);
   const [lines, setLines] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -15,9 +17,26 @@ export default function Chat() {
     try {
       await chatService.startChat(
         { ...config, question },
-        (step, data) => {
+        async (step, data) => {
           if (step === 'task_id') {
             setTaskId(String(data));
+            return;
+          }
+          if (step === 'ask') {
+            const { question, agent } = data;
+            setLines((prev) => [...prev, `Agent (${agent}) asks: ${question}`]);
+            const reply = window.prompt(question);
+            const currentId = useConfigStore.getState().taskId;
+            if (reply !== null && currentId) {
+              await chatService.humanReply(currentId, agent, reply);
+              setLines((prev) => [...prev, `You: ${reply}`]);
+            }
+            return;
+          }
+          if (step === 'end') {
+            const text = typeof data === 'string' ? data : JSON.stringify(data);
+            setLines((prev) => [...prev, `Summary: ${text}`]);
+            return;
           }
           const text = typeof data === 'string' ? data : JSON.stringify(data);
           setLines((prev) => [...prev, text]);
@@ -28,6 +47,19 @@ export default function Chat() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSupplement = async () => {
+    if (!taskId || !supplement) return;
+    await chatService.supplement(taskId, supplement);
+    setSupplement('');
+  };
+
+  const handlePauseResume = async () => {
+    if (!taskId) return;
+    const action = paused ? 'resume' : 'pause';
+    await chatService.takeControl(taskId, action);
+    setPaused(!paused);
   };
 
   return (
@@ -44,6 +76,34 @@ export default function Chat() {
           Send
         </button>
       </form>
+
+      {taskId && (
+        <div className="space-y-3">
+          <textarea
+            value={supplement}
+            onChange={(e) => setSupplement(e.target.value)}
+            placeholder="supplement instruction"
+            className="border p-2 w-full"
+          />
+          <div className="space-x-2">
+            <button
+              type="button"
+              onClick={handleSupplement}
+              className="px-4 py-2 bg-blue-500 text-white rounded"
+            >
+              Supplement
+            </button>
+            <button
+              type="button"
+              onClick={handlePauseResume}
+              className="px-4 py-2 bg-yellow-500 text-white rounded"
+            >
+              {paused ? 'Resume' : 'Pause'}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mt-4 space-y-2">
         {lines.map((line, idx) => (
           <div key={idx} className="whitespace-pre-wrap">
