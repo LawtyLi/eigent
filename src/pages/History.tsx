@@ -61,15 +61,24 @@ export default function Home() {
 			borderColor: "border-bg-fill-coding-active",
 			bgColorLight: "bg-emerald-200",
 		},
-		search_agent: {
-			name: "Search Agent",
+                search_agent: {
+                        name: "Search Agent",
 
-			textColor: "text-blue-700",
-			bgColor: "bg-bg-fill-browser-active",
-			shapeColor: "bg-bg-fill-browser-default",
-			borderColor: "border-bg-fill-browser-active",
-			bgColorLight: "bg-blue-200",
-		},
+                        textColor: "text-blue-700",
+                        bgColor: "bg-bg-fill-browser-active",
+                        shapeColor: "bg-bg-fill-browser-default",
+                        borderColor: "border-bg-fill-browser-active",
+                        bgColorLight: "bg-blue-200",
+                },
+                new_search_agent: {
+                        name: "New Search Agent",
+
+                        textColor: "text-blue-700",
+                        bgColor: "bg-bg-fill-browser-active",
+                        shapeColor: "bg-bg-fill-browser-default",
+                        borderColor: "border-bg-fill-browser-active",
+                        bgColorLight: "bg-blue-200",
+                },
 		document_agent: {
 			name: "Document Agent",
 
@@ -105,11 +114,16 @@ export default function Home() {
 				className={`!h-[10px] !w-[10px] ${agentMap.developer_agent.textColor}`}
 			/>
 		),
-		search_agent: (
-			<Globe
-				className={`!h-[10px] !w-[10px] ${agentMap.search_agent.textColor}`}
-			/>
-		),
+                search_agent: (
+                        <Globe
+                                className={`!h-[10px] !w-[10px] ${agentMap.search_agent.textColor}`}
+                        />
+                ),
+                new_search_agent: (
+                        <Globe
+                                className={`!h-[10px] !w-[10px] ${agentMap.new_search_agent.textColor}`}
+                        />
+                ),
 		document_agent: (
 			<FileText
 				className={`!h-[10px] !w-[10px] ${agentMap.document_agent.textColor}`}

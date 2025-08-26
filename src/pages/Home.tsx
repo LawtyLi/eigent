@@ -32,7 +32,7 @@ export default function Home() {
 		];
 		let webviews: { id: string; agent_id: string; index: number }[] = [];
 		taskAssigning.map((item) => {
-			if (item.type === "search_agent") {
+                        if (item.type === "search_agent" || item.type === "new_search_agent") {
 				item.activeWebviewIds?.map((webview, index) => {
 					webviews.push({ ...webview, agent_id: item.agent_id, index });
 				});
@@ -44,7 +44,7 @@ export default function Home() {
 		}
 		
 		if (webviews.length === 0) {
-			const searchAgent = taskAssigning.find(agent => agent.type === 'search_agent');
+                        const searchAgent = taskAssigning.find(agent => agent.type === 'search_agent' || agent.type === 'new_search_agent');
 			if (searchAgent && searchAgent.activeWebviewIds && searchAgent.activeWebviewIds.length > 0) {
 				searchAgent.activeWebviewIds.forEach((webview, index) => {
 					webviews.push({ ...webview, agent_id: searchAgent.agent_id, index });
@@ -202,18 +202,26 @@ export default function Home() {
 						{chatStore.tasks[chatStore.activeTaskId as string]
 							?.activeWorkSpace && (
 							<div className="w-full h-full flex-1 flex flex-col animate-in fade-in-0 slide-in-from-right-2 duration-300">
-								{chatStore.tasks[
-									chatStore.activeTaskId as string
-								]?.taskAssigning.find(
-									(agent) =>
-										agent.agent_id ===
-										chatStore.tasks[chatStore.activeTaskId as string]
-											.activeWorkSpace
-								)?.type === "search_agent" && (
-									<div className="w-full h-[calc(100vh-104px)] flex-1 flex animate-in fade-in-0 slide-in-from-right-2 duration-300">
-										<SearchAgentWrokSpace />
-									</div>
-								)}
+                                                                {(
+                                                                        chatStore.tasks[
+                                                                                chatStore.activeTaskId as string
+                                                                        ]?.taskAssigning.find(
+                                                                                (agent) =>
+                                                                                        agent.agent_id ===
+                                                                                        chatStore.tasks[
+                                                                                                chatStore.activeTaskId as string
+                                                                                        ]?.activeWorkSpace
+                                                                        )?.type === "search_agent" ||
+                                                                        taskAssigning.find(
+                                                                                (item) =>
+                                                                                        item.agent_id ===
+                                                                                        chatStore.tasks[chatStore.activeTaskId as string]?.activeWorkSpace
+                                                                        )?.type === "new_search_agent"
+                                                                ) && (
+                                                                        <div className="w-full h-[calc(100vh-104px)] flex-1 flex animate-in fade-in-0 slide-in-from-right-2 duration-300">
+                                                                                <SearchAgentWrokSpace />
+                                                                        </div>
+                                                                )}
 								{chatStore.tasks[chatStore.activeTaskId as string]
 									?.activeWorkSpace === "workflow" && (
 									<div className="w-full h-full flex-1 flex items-center justify-center animate-in fade-in-0 slide-in-from-right-2 duration-300">
