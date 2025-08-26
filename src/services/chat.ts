@@ -20,6 +20,30 @@ export const chatService = {
     );
   },
 
+  async supplement(id: string, question: string) {
+    await http(`/chat/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
+    });
+  },
+
+  async takeControl(id: string, action: 'pause' | 'resume') {
+    await http(`/task/${id}/take-control`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    });
+  },
+
+  async humanReply(id: string, agent: string, reply: string) {
+    await http(`/chat/${id}/human-reply`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agent, reply }),
+    });
+  },
+
   async getChat(id: string) {
     return 'TODO';
   },
