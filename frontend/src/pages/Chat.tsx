@@ -1,6 +1,15 @@
 import { useState } from 'react';
-import { CodeXml, Globe, FileText, Image as ImageIcon } from 'lucide-react';
+import {
+  CodeXml,
+  Globe,
+  FileText,
+  Image as ImageIcon,
+} from 'lucide-react';
 import { chatService } from '../services/chat';
+import AgentList from '../components/AgentList';
+import AgentLogs from '../components/AgentLogs';
+import ChatInput from '../components/ChatInput';
+import StreamLog from '../components/StreamLog';
 
 interface AgentState {
   icon: JSX.Element;
@@ -8,23 +17,30 @@ interface AgentState {
   logs: string[];
 }
 
-const defaultAgents: Record<string, AgentState> = {
-  developer_agent: { icon: <CodeXml size={16} />, active: false, logs: [] },
-  search_agent: { icon: <Globe size={16} />, active: false, logs: [] },
-  new_search_agent: { icon: <Globe size={16} />, active: false, logs: [] },
-  document_agent: { icon: <FileText size={16} />, active: false, logs: [] },
-  multi_modal_agent: { icon: <ImageIcon size={16} />, active: false, logs: [] },
+const baseIcons = {
+  developer_agent: <CodeXml size={16} />,
+  search_agent: <Globe size={16} />,
+  new_search_agent: <Globe size={16} />,
+  document_agent: <FileText size={16} />,
+  multi_modal_agent: <ImageIcon size={16} />,
 };
+
+const defaultAgents: Record<string, AgentState> = Object.fromEntries(
+  Object.entries(baseIcons).map(([k, icon]) => [k, { icon, active: false, logs: [] }]),
+);
+
+function getIcon(name: string) {
+  return baseIcons[name as keyof typeof baseIcons] || <CodeXml size={16} />;
+}
 
 export default function Chat() {
   const [taskId] = useState(() => Date.now().toString());
   const [message, setMessage] = useState('');
   const [files, setFiles] = useState<{ file: File; path?: string }[]>([]);
-  const [agents, setAgents] = useState(defaultAgents);
+  const [agents, setAgents] = useState<Record<string, AgentState>>(defaultAgents);
+  const [logs, setLogs] = useState<{ step: string; data: any }[]>([]);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files;
-    if (!selected) return;
+  const handleFiles = async (selected: FileList) => {
     const uploads: { file: File; path?: string }[] = [];
     for (const file of Array.from(selected)) {
       try {
@@ -36,7 +52,6 @@ export default function Chat() {
       }
     }
     setFiles((prev) => [...prev, ...uploads]);
-    e.target.value = '';
   };
 
   const removeFile = (name: string) => {
@@ -59,30 +74,47 @@ export default function Chat() {
     try {
       await chatService.startChat(options, (step, data) => {
         const id = data?.agent_id || data?.agent_name;
-        const log = data?.message || data?.content || data?.result || '';
-        if (step === 'activate_agent' && id) {
+        const log =
+          data?.message ||
+          data?.content ||
+          data?.result ||
+          data?.notice ||
+          data?.output ||
+          data?.question ||
+          '';
+        setLogs((prev) => [...prev, { step, data }]);
+        if (step === 'create_agent' && id) {
+          setAgents((prev) => ({
+            ...prev,
+            [id]: { icon: getIcon(id), active: false, logs: [] },
+          }));
+        } else if (step === 'activate_agent' && id) {
           setAgents((prev) => ({
             ...prev,
             [id]: {
-              ...(prev[id] || { icon: <CodeXml size={16} />, logs: [] }),
+              ...(prev[id] || { icon: getIcon(id), logs: [] }),
               active: true,
-              logs: log ? [...(prev[id]?.logs || []), log] : prev[id]?.logs || [],
+              logs: log
+                ? [...(prev[id]?.logs || []), log]
+                : prev[id]?.logs || [],
             },
           }));
         } else if (step === 'deactivate_agent' && id) {
           setAgents((prev) => ({
             ...prev,
             [id]: {
-              ...(prev[id] || { icon: <CodeXml size={16} />, logs: [] }),
+              ...(prev[id] || { icon: getIcon(id), logs: [] }),
               active: false,
-              logs: log ? [...(prev[id]?.logs || []), log] : prev[id]?.logs || [],
+              logs: log
+                ? [...(prev[id]?.logs || []), log]
+                : prev[id]?.logs || [],
             },
           }));
         } else if (id && log) {
           setAgents((prev) => ({
             ...prev,
             [id]: {
-              ...(prev[id] || { icon: <CodeXml size={16} />, active: false, logs: [] }),
+              ...(prev[id] || { icon: getIcon(id), active: false, logs: [] }),
               logs: [...(prev[id]?.logs || []), log],
             },
           }));
@@ -94,76 +126,18 @@ export default function Chat() {
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="flex gap-4">
-        {Object.entries(agents).map(([key, info]) => (
-          <div key={key} className="flex flex-col items-center text-xs">
-            <div className={info.active ? 'text-blue-600' : 'text-gray-400'}>{info.icon}</div>
-            <span className="mt-1">{key.replace(/_/g, ' ')}</span>
-          </div>
-        ))}
-      </div>
-
-      <div>
-        {Object.entries(agents).map(([key, info]) => (
-          info.logs.length > 0 && (
-            <div key={key} className="mb-2">
-              <div className="font-semibold mb-1">{key.replace(/_/g, ' ')}</div>
-              <ul className="list-disc ml-5 text-sm space-y-1">
-                {info.logs.map((log, i) => (
-                  <li key={i}>{log}</li>
-                ))}
-              </ul>
-            </div>
-          )
-        ))}
-      </div>
-
-      <div className="space-y-2">
-        <textarea
-          className="w-full border p-2"
-          rows={3}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Ask something..."
-        />
-        <div className="flex items-center gap-2">
-          <input id="file" type="file" multiple className="hidden" onChange={handleFileChange} />
-          <label htmlFor="file" className="px-2 py-1 border rounded cursor-pointer">
-            Attach
-          </label>
-          <button
-            onClick={handleSend}
-            className="px-4 py-1 bg-blue-500 text-white rounded"
-          >
-            Send
-          </button>
-        </div>
-        {files.length > 0 && (
-          <ul className="mt-2 space-y-1 text-sm">
-            {files.map((f) => (
-              <li key={f.file.name} className="flex items-center gap-2">
-                {['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(
-                  f.file.name.split('.').pop()?.toLowerCase() || '',
-                ) ? (
-                  <ImageIcon size={16} />
-                ) : (
-                  <FileText size={16} />
-                )}
-                <span className="flex-1 truncate" title={f.file.name}>
-                  {f.file.name}
-                </span>
-                <button
-                  onClick={() => removeFile(f.file.name)}
-                  className="text-red-500"
-                >
-                  x
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <AgentList agents={agents} />
+      <StreamLog logs={logs} />
+      <AgentLogs agents={agents} />
+      <ChatInput
+        message={message}
+        files={files}
+        onMessageChange={setMessage}
+        onSend={handleSend}
+        onFiles={handleFiles}
+        onRemoveFile={removeFile}
+      />
     </div>
   );
 }
